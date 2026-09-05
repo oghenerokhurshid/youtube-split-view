@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         YouTube Split View (Player + Details & Side Comments/Recommended)
 // @namespace    http://tampermonkey.net/
-// @version      8.2
-// @description  通常表示とスプリット表示の切り替えに心地よいスムーズアニメーション（スライド＆フェード）を追加。
+// @version      8.4
+// @description  縦縮小時のレイアウト崩れ・余白アンバランスを解消。プレイヤーとタイトルの美しいセンタリング調和。
 // @author       Assistant
 // @match        https://www.youtube.com/*
 // @grant        none
@@ -85,7 +85,6 @@
                         max-height 0.28s cubic-bezier(0.16, 1, 0.3, 1) !important;
         }
 
-        /* ★ドラッグリサイズ中はアニメーションを完全停止（超軽快な操作感を維持） */
         body.yt-resizing ytd-watch-flexy #primary,
         body.yt-resizing #yt-sidepane-tabs,
         body.yt-resizing ytd-watch-flexy #comments,
@@ -118,14 +117,14 @@
             right: 0 !important;
         }
 
-        /* 通常モード時のプレイヤー */
+        /* 通常モード時のプレイヤー（中央センタリング） */
         body.yt-sidepane-active ytd-watch-flexy:not([theater]):not([fullscreen]) #player {
             width: 100% !important;
             max-height: var(--yt-max-player-h) !important;
-            max-width: min(100%, calc(var(--yt-max-player-h) * 16 / 9)) !important;
+            max-width: min(calc(100vw - var(--yt-sidepane-w) - 48px), calc(var(--yt-max-player-h) * 16 / 9)) !important;
             height: auto !important;
             aspect-ratio: 16 / 9 !important;
-            margin: 0 auto 12px auto !important;
+            margin: 0 auto 16px auto !important;
             position: relative !important;
         }
 
@@ -139,40 +138,45 @@
             max-height: var(--yt-max-player-h) !important;
         }
 
-        /* シアターモード時のプレイヤー配置 */
+        /* ★シアターモード時のプレイヤー配置（メイン領域の中央にセンタリング配置） */
         body.yt-sidepane-active ytd-watch-flexy[theater]:not([fullscreen]) #full-bleed-container {
             position: fixed !important;
             top: 56px !important;
-            width: calc(100vw - var(--yt-sidepane-w)) !important;
-            max-width: calc(var(--yt-max-player-h) * 16 / 9) !important;
+            width: 100% !important;
+            max-width: min(calc(100vw - var(--yt-sidepane-w) - 48px), calc(var(--yt-max-player-h) * 16 / 9)) !important;
             height: auto !important;
             aspect-ratio: 16 / 9 !important;
             max-height: var(--yt-max-player-h) !important;
             min-height: 0 !important;
             z-index: 2005 !important;
             background: #000 !important;
+            margin: 0 auto !important;
             transition: width 0.28s cubic-bezier(0.16, 1, 0.3, 1),
                         left 0.28s cubic-bezier(0.16, 1, 0.3, 1),
                         right 0.28s cubic-bezier(0.16, 1, 0.3, 1) !important;
         }
+
+        /* 右サイドペイン時：メインペイン領域の左右中央 */
         body.yt-sidepane-active.yt-sidepane-right ytd-watch-flexy[theater]:not([fullscreen]) #full-bleed-container {
             left: 0 !important;
-            right: auto !important;
+            right: var(--yt-sidepane-w) !important;
         }
+        /* 左サイドペイン時：メインペイン領域の左右中央 */
         body.yt-sidepane-active.yt-sidepane-left ytd-watch-flexy[theater]:not([fullscreen]) #full-bleed-container {
             left: var(--yt-sidepane-w) !important;
             right: 0 !important;
         }
+
         body.yt-sidepane-active ytd-watch-flexy[theater]:not([fullscreen]) #primary {
             padding-top: calc(var(--yt-max-player-h) + 16px) !important;
         }
 
-        /* タイトル・概要欄 */
+        /* ★タイトル・概要欄：プレイヤーの縮小に道連れにされず、読みやすい自然な幅でセンタリング */
         body.yt-sidepane-active ytd-watch-flexy:not([fullscreen]) #below {
             position: relative !important;
             display: block !important;
             width: 100% !important;
-            max-width: min(100%, calc(var(--yt-max-player-h) * 16 / 9)) !important;
+            max-width: min(calc(100vw - var(--yt-sidepane-w) - 48px), 960px) !important;
             margin: 0 auto !important;
         }
 
@@ -196,7 +200,6 @@
                         opacity 0.25s ease !important;
         }
 
-        /* タブバーのスライドイン */
         body.yt-sidepane-active #yt-sidepane-tabs {
             opacity: 1;
             pointer-events: auto;
@@ -247,7 +250,7 @@
             cursor: pointer;
         }
 
-        /* サイドペイン（コメント / おすすめ）のスライドアニメーション */
+        /* サイドペイン（コメント / おすすめ） */
         body.yt-sidepane-active ytd-watch-flexy:not([fullscreen]) #comments,
         body.yt-sidepane-active ytd-watch-flexy:not([fullscreen]) #secondary {
             position: fixed !important;
@@ -265,7 +268,6 @@
                         opacity 0.25s ease !important;
         }
 
-        /* アクティブタブの可視化＆スライドイン完了 */
         body.yt-sidepane-active.yt-tab-comments ytd-watch-flexy:not([fullscreen]) #comments,
         body.yt-sidepane-active.yt-tab-recommended ytd-watch-flexy:not([fullscreen]) #secondary {
             visibility: visible !important;
@@ -275,7 +277,6 @@
             transform: translateX(0) !important;
         }
 
-        /* 非アクティブタブの不可視化 */
         body.yt-sidepane-active.yt-tab-comments ytd-watch-flexy:not([fullscreen]) #secondary,
         body.yt-sidepane-active.yt-tab-recommended ytd-watch-flexy:not([fullscreen]) #comments {
             visibility: hidden !important;
@@ -284,7 +285,6 @@
             z-index: 1000 !important;
         }
 
-        /* 左右配置時のスライド開始位置（初期オフセット）とシャドウ */
         body.yt-sidepane-active.yt-sidepane-right ytd-watch-flexy:not([fullscreen]) #comments,
         body.yt-sidepane-active.yt-sidepane-right ytd-watch-flexy:not([fullscreen]) #secondary {
             right: 0 !important;
@@ -380,15 +380,15 @@
     function updateDynamicPlayerHeight() {
         if (!isWatchPage) return;
         const below = document.querySelector('#below');
-        let titleHeight = 240;
+        let titleHeight = 220;
         if (below && below.offsetHeight > 80) {
-            titleHeight = Math.min(below.offsetHeight, 300);
+            titleHeight = Math.min(below.offsetHeight, 280);
         }
-        const availableHeight = Math.max(260, window.innerHeight - 56 - titleHeight - 32);
+        const availableHeight = Math.max(240, window.innerHeight - 56 - titleHeight - 32);
         document.documentElement.style.setProperty('--yt-max-player-h', `${availableHeight}px`);
     }
 
-    // ================= タイムスタンプ直接シーク =================
+    // ================= タイムスタンプ判定・直接シーク =================
     function parseTimeToSeconds(tStr) {
         if (!tStr) return null;
         const s = String(tStr).trim().toLowerCase();
@@ -417,30 +417,32 @@
         return isNaN(num) ? null : num;
     }
 
-    function extractSecondsFromHrefOrText(href, text) {
-        if (href) {
-            try {
-                const url = new URL(href, location.origin);
-                const tParam = url.searchParams.get('t');
-                if (tParam) {
-                    const sec = parseTimeToSeconds(tParam);
-                    if (sec !== null) return sec;
-                }
-            } catch (e) {
-                const m = href.match(/[?&]t=([0-9hms]+)/i);
-                if (m && m) {
-                    const sec = parseTimeToSeconds(m);
-                    if (sec !== null) return sec;
-                }
+    function extractTimestampSeconds(link) {
+        const isFromCommentOrDesc = link.closest('#comments, #below, ytd-watch-metadata');
+        if (!isFromCommentOrDesc) return null;
+        if (link.closest('ytd-thumbnail, #thumbnail')) return null;
+
+        const href = link.getAttribute('href') || '';
+        const text = link.textContent.trim();
+
+        try {
+            const url = new URL(link.href, location.origin);
+            const linkV = url.searchParams.get('v');
+            const curV = getVideoId();
+            if (linkV && curV && linkV !== curV) {
+                return null;
             }
+            const tParam = url.searchParams.get('t');
+            if (tParam) {
+                const sec = parseTimeToSeconds(tParam);
+                if (sec !== null) return sec;
+            }
+        } catch (e) {}
+
+        if (/^(?:\d{1,2}:)?\d{1,2}:\d{2}$/.test(text)) {
+            return parseTimeToSeconds(text);
         }
 
-        if (text) {
-            const clean = text.trim();
-            if (/^(?:\d{1,2}:)?\d{1,2}:\d{2}$/.test(clean)) {
-                return parseTimeToSeconds(clean);
-            }
-        }
         return null;
     }
 
@@ -469,9 +471,7 @@
         const link = e.target.closest('a');
         if (!link) return;
 
-        const href = link.getAttribute('href') || '';
-        const text = link.textContent.trim();
-        const seconds = extractSecondsFromHrefOrText(href, text);
+        const seconds = extractTimestampSeconds(link);
 
         if (seconds !== null) {
             e.preventDefault();
@@ -651,7 +651,6 @@
         setupResizeSync();
         kickCommentsLoading();
 
-        // アニメーション完了（約280ms）に合わせてプレイヤーサイズを再同期
         setTimeout(() => {
             if (isActive) triggerResize();
         }, 300);
@@ -663,7 +662,6 @@
         heightPreserver.style.display = 'none';
         heightPreserver.style.height = '0px';
 
-        // アニメーション完了に合わせて通常サイズへ再同期
         setTimeout(() => {
             triggerResize();
         }, 300);
@@ -699,14 +697,14 @@
         );
     }
 
-    // ================= ドラッグリサイズ（アニメーション自動除外・高レスポンス） =================
+    // ================= ドラッグリサイズ =================
     resizer.addEventListener('mousedown', (e) => {
         if (!isWatchPage || isMobileView()) return;
         isResizing = true;
         startX = e.clientX;
         startWidth = currentWidth;
         resizer.classList.add('resizing');
-        document.body.classList.add('yt-resizing'); // ★ドラッグ中はtransitionを瞬時に解除
+        document.body.classList.add('yt-resizing');
         document.body.style.userSelect = 'none';
         lastDragSyncTime = performance.now();
 
@@ -744,7 +742,7 @@
                     rAFId = null;
                 }
                 resizer.classList.remove('resizing');
-                document.body.classList.remove('yt-resizing'); // ★ドラッグ終了でtransitionを再有効化
+                document.body.classList.remove('yt-resizing');
                 document.body.style.userSelect = '';
 
                 if (pendingWidth !== null) {
